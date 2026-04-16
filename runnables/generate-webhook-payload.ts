@@ -2,7 +2,8 @@ import { createHmac } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 
 export const DEFAULT_PARTNER_ID = 'a1b2c3d4-e5f6-4789-a012-3456789abcde'
-export const DEFAULT_SHARED_SECRET = 'external-actions-demo-secret'
+export const DEFAULT_SHARED_SECRET = 'external-actions-phase-one-secret'
+export const DEFAULT_API_BASE_URL = 'https://pr-531-preview.incdev.dev/api'
 
 export type WebhookBody = {
   partnerActionKey: string
@@ -61,6 +62,13 @@ export const createWebhookSignature = (input: { rawBody: string; timestamp: stri
   const signature = createHmac('sha256', input.sharedSecret).update(signedPayload).digest('hex')
 
   return `sha256=${signature}`
+}
+
+export const createWebhookUrl = (
+  partnerId: string = DEFAULT_PARTNER_ID,
+  apiBaseUrl: string = DEFAULT_API_BASE_URL,
+): string => {
+  return `${apiBaseUrl}/external-actions/webhooks/${encodeURIComponent(partnerId)}`
 }
 
 export const generateWebhookPayload = (input: GenerateWebhookPayloadInput = {}): GeneratedWebhookPayload => {
