@@ -1,0 +1,17 @@
+{
+  "name": "external-actions-mvp-runnables",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.25.0",
+  "scripts": {
+    "generate": "tsx generate-webhook-payload.ts",
+    "validate": "tsx validate-webhook-payload.ts",
+    "demo": "tsx generations-validation.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
