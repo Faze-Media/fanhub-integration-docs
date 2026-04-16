@@ -7,6 +7,7 @@
     "generate": "tsx generate-webhook-payload.ts",
     "validate": "tsx validate-webhook-payload.ts",
     "demo": "tsx generations-validation.ts",
+    "send": "tsx send-test-webhook-call.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

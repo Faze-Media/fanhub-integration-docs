@@ -56,6 +56,26 @@ This script:
 3. Modifies the body
 4. Proves the tampered payload is rejected
 
+It also prints the default live webhook URL that matches the current phase-1 API stub.
+
+### Send a real webhook call
+
+```bash
+pnpm send
+```
+
+This sends the generated payload to the live webhook stub at:
+
+```text
+https://dev.incention.io/api/external-actions/webhooks/:partnerId
+```
+
+If you wish to override the URL to another environment, override it with:
+
+```bash
+EXTERNAL_ACTIONS_API_BASE_URL=https://your-api.example.com/api pnpm send
+```
+
 ### Typecheck
 
 ```bash
@@ -72,6 +92,8 @@ This runs TypeScript in strict mode with Node typings enabled.
   - Verifies the signature against the exact raw body
 - `generations-validation.ts`
   - Runs the happy path and tamper-detection demo
+- `send-test-webhook-call.ts`
+  - Sends the generated payload to the live webhook stub and prints the response
 
 ## Notes For Integrators
 
@@ -79,3 +101,4 @@ This runs TypeScript in strict mode with Node typings enabled.
 - Validation must use the raw request body before any JSON parsing or reformatting.
 - The demo body shape matches the canonical inbound webhook contract in `../README.md`, including `partnerActionKey`, `userIdToken`/`email`, and string-based `amount`.
 - Nullable webhook fields may be omitted instead of sent as `null`; the generator and validator treat both forms as equivalent.
+- The default partner credentials and target URL in these scripts are aligned with the current phase-1 API stub implementation.

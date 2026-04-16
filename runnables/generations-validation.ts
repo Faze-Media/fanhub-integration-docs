@@ -1,5 +1,9 @@
 import { fileURLToPath } from 'node:url'
-import { DEFAULT_SHARED_SECRET, generateWebhookPayload } from './generate-webhook-payload.ts'
+import {
+  createWebhookUrl,
+  DEFAULT_SHARED_SECRET,
+  generateWebhookPayload,
+} from './generate-webhook-payload.ts'
 import { validateWebhookPayload } from './validate-webhook-payload.ts'
 
 const markFailure = (message: string) => {
@@ -13,10 +17,12 @@ const markSuccess = (message: string) => {
 
 export const runGenerationValidation = () => {
   const generated = generateWebhookPayload()
-  const wrongSharedSecret = 'external-actions-demo-secret-wrong'
+  const wrongSharedSecret = `${DEFAULT_SHARED_SECRET}-wrong`
 
   console.log('1. Generating signed webhook payload...\n')
   console.log(JSON.stringify(generated, null, 2))
+  console.log('\nDefault webhook URL:\n')
+  console.log(createWebhookUrl(generated.partnerId))
 
   console.log('\n2. Validating generated payload...\n')
   const validated = validateWebhookPayload({
