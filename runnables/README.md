@@ -67,10 +67,10 @@ pnpm send
 This sends the generated payload to the live webhook stub at:
 
 ```text
-https://pr-531-preview.incdev.dev/api/external-actions/webhooks/:partnerId
+https://dev.incention.io/api/external-actions/webhooks/:partnerId
 ```
 
-If the preview URL changes, override it with:
+If you wish to override the URL to another environment, override it with:
 
 ```bash
 EXTERNAL_ACTIONS_API_BASE_URL=https://your-api.example.com/api pnpm send

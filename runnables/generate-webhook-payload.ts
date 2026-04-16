@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 
 export const DEFAULT_PARTNER_ID = 'a1b2c3d4-e5f6-4789-a012-3456789abcde'
 export const DEFAULT_SHARED_SECRET = 'external-actions-phase-one-secret'
-export const DEFAULT_API_BASE_URL = 'https://pr-531-preview.incdev.dev/api'
+export const DEFAULT_API_BASE_URL = 'https://dev.incention.io/api'
 
 export type WebhookBody = {
   partnerActionKey: string
