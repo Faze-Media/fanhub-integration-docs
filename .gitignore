@@ -1,1 +1,4 @@
 node_modules
+
+# Local webhook send config (copy from runnables/configuration-sample.json)
+runnables/configuration.json
