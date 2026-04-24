@@ -4,8 +4,11 @@ This folder contains a small PNPM + TypeScript proof of concept for generating a
 
 ## Prerequisites
 
-- `pnpm`
 - `node` 24+ recommended
+  - Installation Instructions: [here](https://github.com/nvm-sh/nvm)
+  - If that doesn't work, try [here](https://nodejs.org/en/download)
+- `pnpm`
+  - Installation Instructions: [here](https://pnpm.io/installation)
 
 ## Install
 
@@ -64,16 +67,47 @@ It also prints the default live webhook URL that matches the current phase-1 API
 pnpm send
 ```
 
-This sends the generated payload to the live webhook stub at:
+This reads `configuration.json`, signs the configured payload with the configured shared secret, and sends it to:
 
 ```text
 https://dev.incention.io/api/external-actions/webhooks/:partnerId
 ```
 
-If you wish to override the URL to another environment, override it with:
+The script builds the final webhook URL from:
+
+- `url`: the API base URL, such as `https://dev.incention.io/api`
+- `partnerId`: appended to `/external-actions/webhooks/:partnerId`
+- `secret`: used to compute `x-signature`
+- `payload`: serialized from the configured payload object and used as the request body
+
+The same `partnerId` is also sent in the `x-partner-id` header.
+
+Example configuration:
+
+```json
+{
+  "url": "https://dev.incention.io/api",
+  "partnerId": "7e846326-2ec3-4df4-b4c1-9780d05a010b",
+  "secret": "replace-with-your-shared-secret",
+  "payload": {
+    "partnerActionKey": "purchase_completed",
+    "partnerEventId": "purchase_12345",
+    "occurredAt": "2026-04-15T14:00:00.000Z",
+    "userIdToken": "uidtok_demo_user_123",
+    "partnerUserId": "user_9981",
+    "amount": "50.00",
+    "metadata": {
+      "orderId": "ord_12345",
+      "sku": "john-wick-claw-pull"
+    }
+  }
+}
+```
+
+If you want to use a different config file path, pass it as the first argument:
 
 ```bash
-EXTERNAL_ACTIONS_API_BASE_URL=https://your-api.example.com/api pnpm send
+pnpm send ./my-webhook-config.json
 ```
 
 ### Typecheck
@@ -93,7 +127,9 @@ This runs TypeScript in strict mode with Node typings enabled.
 - `generations-validation.ts`
   - Runs the happy path and tamper-detection demo
 - `send-test-webhook-call.ts`
-  - Sends the generated payload to the live webhook stub and prints the response
+  - Reads `configuration.json`, signs the configured payload, sends it to the live webhook stub, and prints the response
+- `configuration.json`
+  - Stores the target API base URL, partner ID, shared secret, and payload used by `pnpm send`
 
 ## Notes For Integrators
 

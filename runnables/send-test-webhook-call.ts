@@ -1,23 +1,140 @@
+import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import {
   createWebhookUrl,
-  DEFAULT_API_BASE_URL,
-  generateWebhookPayload,
-  type GenerateWebhookPayloadInput,
+  createWebhookSignature,
+  type GeneratedWebhookPayload,
+  type WebhookBody,
 } from './generate-webhook-payload.ts'
 
-export type SendTestWebhookCallInput = GenerateWebhookPayloadInput & {
-  apiBaseUrl?: string
+export type SendTestWebhookCallConfig = {
+  url: string
+  partnerId: string
+  secret: string
+  payload: WebhookBody
+}
+
+export type SendTestWebhookCallInput = {
+  configPath?: string
+  timestamp?: string
 }
 
 export type SendTestWebhookCallResult = {
   url: string
-  request: ReturnType<typeof generateWebhookPayload>
+  request: GeneratedWebhookPayload
   response: {
     ok: boolean
     status: number
     headers: Record<string, string>
     body: unknown
+  }
+}
+
+const DEFAULT_CONFIG_PATH = fileURLToPath(new URL('./configuration.json', import.meta.url))
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+const assertNonEmptyString = (value: unknown, fieldName: string): string => {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`Expected "${fieldName}" to be a non-empty string in configuration.json.`)
+  }
+
+  return value
+}
+
+const assertOptionalNullableString = (value: unknown, fieldName: string): string | null | undefined => {
+  if (value === undefined || value === null) {
+    return value
+  }
+
+  if (typeof value !== 'string') {
+    throw new Error(`Expected "${fieldName}" to be a string, null, or omitted in configuration.json.`)
+  }
+
+  return value
+}
+
+const assertMetadata = (value: unknown): Record<string, string> => {
+  if (!isRecord(value)) {
+    throw new Error('Expected "payload.metadata" to be an object of string values in configuration.json.')
+  }
+
+  const invalidEntry = Object.entries(value).find(([, entryValue]) => typeof entryValue !== 'string')
+
+  if (invalidEntry) {
+    throw new Error(`Expected "payload.metadata.${invalidEntry[0]}" to be a string in configuration.json.`)
+  }
+
+  return value as Record<string, string>
+}
+
+const parseWebhookBody = (value: unknown): WebhookBody => {
+  if (!isRecord(value)) {
+    throw new Error('Expected "payload" to be an object in configuration.json.')
+  }
+
+  return {
+    partnerActionKey: assertNonEmptyString(value.partnerActionKey, 'payload.partnerActionKey'),
+    partnerEventId: assertNonEmptyString(value.partnerEventId, 'payload.partnerEventId'),
+    occurredAt: assertNonEmptyString(value.occurredAt, 'payload.occurredAt'),
+    userIdToken: assertOptionalNullableString(value.userIdToken, 'payload.userIdToken'),
+    email: assertOptionalNullableString(value.email, 'payload.email'),
+    partnerUserId: assertOptionalNullableString(value.partnerUserId, 'payload.partnerUserId'),
+    amount: assertOptionalNullableString(value.amount, 'payload.amount'),
+    metadata: assertMetadata(value.metadata),
+  }
+}
+
+const parseSendTestWebhookCallConfig = (value: unknown): SendTestWebhookCallConfig => {
+  if (!isRecord(value)) {
+    throw new Error('Expected configuration.json to contain a JSON object.')
+  }
+
+  return {
+    url: assertNonEmptyString(value.url, 'url').replace(/\/+$/, ''),
+    partnerId: assertNonEmptyString(value.partnerId, 'partnerId'),
+    secret: assertNonEmptyString(value.secret, 'secret'),
+    payload: parseWebhookBody(value.payload),
+  }
+}
+
+const readSendTestWebhookCallConfig = async (configPath: string = DEFAULT_CONFIG_PATH): Promise<SendTestWebhookCallConfig> => {
+  const rawConfig = await readFile(configPath, 'utf8')
+
+  try {
+    return parseSendTestWebhookCallConfig(JSON.parse(rawConfig))
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`Failed to parse configuration JSON at "${configPath}": ${error.message}`)
+    }
+
+    throw error
+  }
+}
+
+const buildSignedWebhookRequest = (
+  config: SendTestWebhookCallConfig,
+  timestamp: string = Date.now().toString(),
+): GeneratedWebhookPayload => {
+  const rawBody = JSON.stringify(config.payload)
+  const signature = createWebhookSignature({
+    rawBody,
+    timestamp,
+    sharedSecret: config.secret,
+  })
+
+  return {
+    partnerId: config.partnerId,
+    timestamp,
+    rawBody,
+    body: config.payload,
+    headers: {
+      'x-partner-id': config.partnerId,
+      'x-signature-timestamp': timestamp,
+      'x-signature': signature,
+    },
   }
 }
 
@@ -38,9 +155,9 @@ const parseResponseBody = async (response: Response): Promise<unknown> => {
 export const sendTestWebhookCall = async (
   input: SendTestWebhookCallInput = {},
 ): Promise<SendTestWebhookCallResult> => {
-  const request = generateWebhookPayload(input)
-  const apiBaseUrl = input.apiBaseUrl ?? process.env.EXTERNAL_ACTIONS_API_BASE_URL ?? DEFAULT_API_BASE_URL
-  const url = createWebhookUrl(request.partnerId, apiBaseUrl)
+  const config = await readSendTestWebhookCallConfig(input.configPath)
+  const request = buildSignedWebhookRequest(config, input.timestamp)
+  const url = createWebhookUrl(config.partnerId, config.url)
 
   const response = await fetch(url, {
     method: 'POST',
@@ -66,7 +183,9 @@ export const sendTestWebhookCall = async (
 const isDirectExecution = process.argv[1] === fileURLToPath(import.meta.url)
 
 if (isDirectExecution) {
-  sendTestWebhookCall()
+  sendTestWebhookCall({
+    configPath: process.argv[2],
+  })
     .then((result) => {
       console.log('Sent webhook request to:\n')
       console.log(result.url)
