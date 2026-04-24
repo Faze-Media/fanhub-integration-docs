@@ -5,8 +5,7 @@ This folder contains a small PNPM + TypeScript proof of concept for generating a
 ## Prerequisites
 
 - `node` 24+ recommended
-  - Installation Instructions: [here](https://github.com/nvm-sh/nvm)
-  - If that doesn't work, try [here](https://nodejs.org/en/download)
+  - Installation Instructions: [here](https://nodejs.org/en/download)
 - `pnpm`
   - Installation Instructions: [here](https://pnpm.io/installation)
 
