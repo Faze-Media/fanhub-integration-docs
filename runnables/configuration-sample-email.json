@@ -3,7 +3,7 @@
   "partnerId": "7e846326-2ec3-4df4-b4c1-9780d05a010b",
   "secret": "SECRET_KEY_HERE",
   "payload": {
-    "partnerActionKey": "beezie_claw_pull",
+    "partnerActionKey": "something_happened",
     "partnerEventId": "evt_01HZABCDEFGHIJKLMNOPQRSTUV",
     "occurredAt": "2026-04-24T13:19:32.281Z",
     "email": "pedro@incention.io",
