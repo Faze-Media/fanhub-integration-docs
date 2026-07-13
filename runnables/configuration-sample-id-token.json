@@ -9,7 +9,6 @@
     "userIdToken": "<signed user_id_token passed via the URL>",
     "amount": "50.00",
     "metadata": {
-      "orderId": "ord_12345",
       "unit": "USD"
     }
   }
