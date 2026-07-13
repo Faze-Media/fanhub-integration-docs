@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import {
   createWebhookUrl,
   createWebhookSignature,
+  decodeUrlFriendlyUserIdToken,
   type GeneratedWebhookPayload,
   type WebhookBody,
 } from './generate-webhook-payload.ts'
@@ -75,11 +76,15 @@ const parseWebhookBody = (value: unknown): WebhookBody => {
     throw new Error('Expected "payload" to be an object in configuration.json.')
   }
 
+  const rawUserIdToken = assertOptionalNullableString(value.userIdToken, 'payload.userIdToken')
+  const userIdToken =
+    typeof rawUserIdToken === 'string' ? decodeUrlFriendlyUserIdToken(rawUserIdToken) : rawUserIdToken
+
   return {
     partnerActionKey: assertNonEmptyString(value.partnerActionKey, 'payload.partnerActionKey'),
     partnerEventId: assertNonEmptyString(value.partnerEventId, 'payload.partnerEventId'),
     occurredAt: assertNonEmptyString(value.occurredAt, 'payload.occurredAt'),
-    userIdToken: assertOptionalNullableString(value.userIdToken, 'payload.userIdToken'),
+    userIdToken,
     email: assertOptionalNullableString(value.email, 'payload.email'),
     partnerUserId: assertOptionalNullableString(value.partnerUserId, 'payload.partnerUserId'),
     amount: assertOptionalNullableString(value.amount, 'payload.amount'),

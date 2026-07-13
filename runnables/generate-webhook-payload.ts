@@ -51,6 +51,21 @@ const DEFAULT_WEBHOOK_BODY: WebhookBody = {
   },
 }
 
+const URL_ENCODED_SEQUENCE = /%[0-9A-Fa-f]{2}/
+
+export const decodeUrlFriendlyUserIdToken = (userIdToken: string): string => {
+  if (!URL_ENCODED_SEQUENCE.test(userIdToken)) {
+    return userIdToken
+  }
+
+  try {
+    return decodeURIComponent(userIdToken)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    throw new Error(`Failed to decode URL-friendly userIdToken: ${message}`)
+  }
+}
+
 const normalizeWebhookBody = (body: WebhookBody): WebhookBody => {
   return Object.fromEntries(
     Object.entries(body).filter(([, value]) => value !== null && value !== undefined),
