@@ -3,12 +3,14 @@
   "partnerId": "7e846326-2ec3-4df4-b4c1-9780d05a010b",
   "secret": "SECRET_KEY_HERE",
   "payload": {
-    "partnerActionKey": "something_happened",
+    "partnerActionKey": "beezie_claw_pull",
     "partnerEventId": "evt_01HZABCDEFGHIJKLMNOPQRSTUV",
-    "occurredAt": "2026-04-24T13:19:32.281Z",
-    "email": "pedro@incention.io",
+    "occurredAt": "2026-07-13T21:02:21.546Z",
+    "userIdToken": "<signed user_id_token passed via the URL>",
+    "amount": "50.00",
     "metadata": {
-      "orderId": "ord_12345"
+      "orderId": "ord_12345",
+      "unit": "USD"
     }
   }
 }
