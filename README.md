@@ -131,10 +131,16 @@ sequenceDiagram
 ### Endpoint
 
 ```text
-POST /api/external-actions/webhooks/:partnerId
+POST {baseUrl}/external-actions/webhooks/:partnerId
 ```
 
-Replace `:partnerId` with your assigned partner UUID (e.g. `a1b2c3d4-e5f6-4789-a012-3456789abcde`).
+`{baseUrl}` is the environment base URL we provide. It already includes the `/api` prefix and is the same value used as `url` in the runnable demo configuration. For development that is `https://dev.incention.io/api`, so the full endpoint is:
+
+```text
+POST https://dev.incention.io/api/external-actions/webhooks/:partnerId
+```
+
+Replace `:partnerId` with your assigned partner UUID (e.g. `a1b2c3d4-e5f6-4789-a012-3456789abcde`). Keep the `/api` prefix; without it the request does not reach the API.
 
 ### Headers
 
