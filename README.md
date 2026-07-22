@@ -35,7 +35,7 @@ The `partnerActionKey` describes the completed event itself. It is shared with y
 ### Checklist
 
 1. Store your `partnerId`, `sharedSecret`, and `partnerActionKey`(s) securely in your backend.
-2. Implement the user redirect capture (store the `userIdToken` query parameter when users arrive from Fanhub).
+2. Implement the user redirect capture (store the `fanhubUserIdToken` query parameter when users arrive from Fanhub).
 3. Implement webhook signing and dispatch from your backend.
 4. Test using the [reference implementation](#reference-implementation) to verify your signing logic matches.
 
@@ -56,11 +56,11 @@ This is the default and preferred linking strategy. Only users who actually clic
 3. The user is redirected to your platform with the token appended as a query parameter:
 
 ```text
-https://your-platform.example.com/landing-page?userIdToken=<opaque-token>
+https://your-platform.example.com/landing-page?fanhubUserIdToken=<opaque-token>
 ```
 
-4. Your platform stores the `userIdToken` alongside your local user.
-5. When the user completes an action, your backend includes the `userIdToken` in the webhook payload.
+4. Your platform stores the value of the `fanhubUserIdToken` query parameter alongside your local user.
+5. When the user completes an action, your backend sends that value back in the webhook payload as `userIdToken`. The redirect URL uses `fanhubUserIdToken`, but the webhook body drops the prefix and names the field `userIdToken`.
 
 **Important notes:**
 
@@ -77,11 +77,11 @@ sequenceDiagram
 
     Fan->>FH: Click "Earn"
     FH->>FH: Generate or reuse permanent user ID token
-    FH-->>Fan: Redirect to your URL + userIdToken
+    FH-->>Fan: Redirect to your URL + fanhubUserIdToken
     Fan->>Partner: Arrives on your platform
-    Partner->>Partner: Persist userIdToken with local user/session
+    Partner->>Partner: Persist fanhubUserIdToken value with local user/session
     Fan->>Partner: Completes action (e.g. purchase)
-    Partner->>Partner: Build webhook payload with userIdToken
+    Partner->>Partner: Build webhook payload with userIdToken field
     Partner->>FH: POST webhook (JSON body + HMAC headers)
     FH->>FH: Verify HMAC signature
     FH->>FH: Create proof + award points
